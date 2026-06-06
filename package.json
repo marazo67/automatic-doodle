@@ -1,13 +1,16 @@
 {
-  "name": "telebot",
-  "version": "1.0.0",
-  "description": "",
+  "name": "taragon-bot",
+  "version": "3.1.0",
+  "description": "TARAGON SQUAD TRS - Telegram + WhatsApp Bot",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
   },
   "dependencies": {
+    "@whiskeysockets/baileys": "^6.6.0",
+    "pino": "^9.2.0",
     "node-telegram-bot-api": "^0.64.0",
+    "express": "^4.19.2",
     "axios": "^1.7.2",
     "yt-search": "^2.11.1"
   },
