@@ -1,9 +1,12 @@
 // ======================== TARAGON TELEGRAM BOT + WA PAIRING + WEB PANEL ========================
-// Features: AI chat, Downloaders (YT audio/video, TikTok, Spotify, Instagram, Facebook),
-//           Translation, Website checker, WhatsApp pairing via code & QR, Session ID generation.
-// Owner: 7784215573 (hardcoded)
+// All features: AI chat, Downloaders (YT audio/video, TikTok, Spotify, Instagram, Facebook),
+//                Translation, Website checker, WhatsApp pairing via code & QR, Session ID.
+// Owner: 7784215573 (hardcoded) – only owner can pair/disconnect.
 // Start: node bot.js
 // ==============================================================================================
+
+process.on('uncaughtException', (err) => console.error('Uncaught Exception:', err));
+process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
 
 const TelegramBot = require('node-telegram-bot-api');
 const QRCode = require('qrcode');
@@ -29,7 +32,7 @@ const socketIO = require('socket.io');
 const execAsync = promisify(exec);
 
 // ========================= CONFIG =========================
-const TELEGRAM_TOKEN = '8838166170:AAGzpSpkuSzr01jn7KP5551VrhsS1xF6A9E'; // your token
+const TELEGRAM_TOKEN = '8838166170:AAGzpSpkuSzr01jn7KP5551VrhsS1xF6A9E';
 const OWNER_ID = 7784215573;   // your Telegram user ID
 const PORT = process.env.PORT || 3000;
 // ==========================================================
@@ -123,11 +126,19 @@ async function downloadVideo(url) {
 // ======================== TELEGRAM BOT ============================
 const bot = new TelegramBot(TELEGRAM_TOKEN, { polling: true });
 
-bot.on('polling_error', (error) => console.error('Telegram polling error:', error));
-bot.on('webhook_error', (error) => console.error('Telegram webhook error:', error));
+bot.on('polling_error', (error) => {
+    console.error('Telegram polling error:', error.code, error.message);
+    // Don't exit, the bot will keep retrying.
+});
+bot.on('error', (error) => console.error('Telegram bot error:', error));
 
 // Helper: check if user is owner
 const isOwner = (msg) => msg.from.id === OWNER_ID;
+
+// ── /ping ─────────────────────────────────────────────────────
+bot.onText(/\/ping/, (msg) => {
+    bot.sendMessage(msg.chat.id, '🏓 Pong! Bot is alive.');
+});
 
 // ── /start ──────────────────────────────────────────────────────
 bot.onText(/\/start/, async (msg) => {
@@ -159,7 +170,9 @@ ${status}
 /pair <phone>
 /qr
 /status
-/logout`;
+/logout
+
+/ping – test bot`;
     bot.sendMessage(chatId, menu, { parse_mode: 'HTML', disable_web_page_preview: true });
 });
 
@@ -196,6 +209,9 @@ bot.onText(/\/play(?: (.+))?/, async (msg, match) => {
         bot.sendMessage(chatId, `❌ Error: ${e.message}`);
     }
 });
+
+// ... (all other commands from the previous fully‑functional version: /ytmp4, /tiktok, /spotify, /instagram, /facebook, /gpt, /imagine, /trt, /check)
+// (I am including them below for completeness)
 
 bot.onText(/\/ytmp4(?: (.+))?/, async (msg, match) => {
     const chatId = msg.chat.id;
@@ -463,7 +479,7 @@ const io = socketIO(server);
 
 app.use(express.static(PUBLIC_DIR));
 
-// ── Web panel HTML (beautiful UI) ──────────────────────────────
+// ── Web panel HTML (kept from before) ────────────────────────────
 const PANEL_HTML = `<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -529,10 +545,9 @@ const PANEL_HTML = `<!DOCTYPE html>
   const resultBox = document.getElementById('resultBox');
   const message = document.getElementById('message');
 
-  // ✅ FIXED: Correct template literal syntax
   socket.on('status', (d) => {
     if (d.connected) {
-      statusLine.innerHTML = \`✅ WhatsApp: +\${d.number}\${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}\`;
+      statusLine.innerHTML = `✅ WhatsApp: +${d.number}${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}`;
     } else {
       statusLine.textContent = 'Not connected';
     }
@@ -554,7 +569,7 @@ const PANEL_HTML = `<!DOCTYPE html>
     }
     pairBtn.disabled = false;
     pairBtn.innerHTML = '🔗 Generate Pairing Code';
-    statusLine.innerHTML = \`✅ WhatsApp: +\${d.num}\${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}\`;
+    statusLine.innerHTML = `✅ WhatsApp: +${d.num}${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}`;
   });
 
   socket.on('error', (d) => {
@@ -595,7 +610,6 @@ fs.writeFileSync(path.join(PUBLIC_DIR, 'index.html'), PANEL_HTML);
 let webPairingInProgress = false;
 
 io.on('connection', (socket) => {
-    // Send current status
     socket.emit('status', {
         connected: !!whatsAppSocket,
         number: botNumber,
@@ -676,7 +690,7 @@ app.get('/health', (req, res) => res.json({ status: 'ok', whatsapp: !!whatsAppSo
 server.listen(PORT, () => {
     console.log(`\n🇻🇦 TARAGON TELEGRAM BOT + WEB PANEL – v4.0.0`);
     console.log(`   Web panel: http://localhost:${PORT}`);
-    console.log(`   Telegram bot is live. Send /start\n`);
+    console.log(`   Telegram bot is live. Send /start or /ping\n`);
 });
 
 // ==================== AUTO-RECONNECT ON BOOT ====================
@@ -711,3 +725,5 @@ server.listen(PORT, () => {
         console.log('Auto‑reconnect error:', e.message);
     }
 })();
+
+console.log('Bot initialization complete.');
