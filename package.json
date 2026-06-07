@@ -1,7 +1,7 @@
 {
   "name": "taragon-bot",
-  "version": "3.3.0",
-  "description": "TARAGON SQUAD TRS - Telegram + WhatsApp Bot with Web Panel",
+  "version": "4.0.0",
+  "description": "TARAGON SQUAD TRS - Telegram Bot with WhatsApp Pairing",
   "main": "bot.js",
   "scripts": {
     "start": "node bot.js"
