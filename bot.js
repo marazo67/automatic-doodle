@@ -529,9 +529,10 @@ const PANEL_HTML = `<!DOCTYPE html>
   const resultBox = document.getElementById('resultBox');
   const message = document.getElementById('message');
 
+  // ✅ FIXED: Correct template literal syntax
   socket.on('status', (d) => {
     if (d.connected) {
-      statusLine.innerHTML = `✅ WhatsApp: +${d.number}${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}`;
+      statusLine.innerHTML = \`✅ WhatsApp: +\${d.number}\${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}\`;
     } else {
       statusLine.textContent = 'Not connected';
     }
@@ -553,7 +554,7 @@ const PANEL_HTML = `<!DOCTYPE html>
     }
     pairBtn.disabled = false;
     pairBtn.innerHTML = '🔗 Generate Pairing Code';
-    statusLine.innerHTML = `✅ WhatsApp: +${d.num}${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}`;
+    statusLine.innerHTML = \`✅ WhatsApp: +\${d.num}\${d.sessionId ? '<br>Session ID: ' + d.sessionId : ''}\`;
   });
 
   socket.on('error', (d) => {
